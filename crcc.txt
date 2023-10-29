@@ -83,17 +83,6 @@ strcpy(temp,rem);
 
 
 strcpy(rem,temp);
-printf("\nQuotient is : ");
-for(int i=0;i<msglen;i++)
-{
-printf("%c",quot[i]);
-}
-printf("\nRemainder is : ");
-for(int i=0;i<keylen-1;i++)
-{
-printf("%c",rem[i]);
-}
-
 int f=0;
 for(int i=0;i<keylen-1;i++)
 {
