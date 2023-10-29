@@ -1,0 +1,73 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+
+char buffer[1024];
+char rev[1024];
+
+void fun()
+{
+bzero(rev,1024);
+int j=0;
+for(int i=strlen(buffer)-1;i>=0;i--)
+{
+rev[j]=buffer[i];
+j++;
+}
+bzero(buffer,1024);
+strcpy(buffer,rev);
+}
+
+void main(int argc,char * argv[])
+{
+int sockfd,nwsockfd;
+struct sockaddr_in serv_addr,client_addr;
+socklen_t len;
+
+int port=8086;
+
+sockfd=socket(AF_INET,SOCK_STREAM,0);
+
+serv_addr.sin_family=AF_INET;
+serv_addr.sin_port=htons(port);
+serv_addr.sin_addr.s_addr=INADDR_ANY;
+
+bind(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr));
+
+listen(sockfd,5);
+
+len=sizeof(client_addr);
+nwsockfd=accept(sockfd,(struct sockaddr *)&client_addr,&len);
+
+while(1)
+{
+bzero(buffer,1024);
+read(nwsockfd,buffer,1024);
+printf("\nClient : %s",buffer);
+
+if(!strncmp(buffer,"bye",3))
+{
+write(nwsockfd,buffer,strlen(buffer));
+break;
+}
+
+fun();
+//bzero(buffer,1024);
+//fgets(buffer,1024,stdin);
+
+write(nwsockfd,buffer,strlen(buffer));
+
+
+
+}
+
+close(sockfd);
+close(nwsockfd);
+
+}

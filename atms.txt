@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+void main(int argc, char *argv[])
+{
+int sockfd,nwsockfd;
+struct sockaddr_in serv_addr,client_addr;
+socklen_t len;
+int port=8086;
+char buffer[1024];
+
+char name[5]="kumar";
+int cn=1234;
+int pin=5678;
+int bal=5000;
+int amt,cpin,ccn;
+
+
+sockfd=socket(AF_INET,SOCK_STREAM,0);
+
+serv_addr.sin_family=AF_INET;
+serv_addr.sin_port=htons(port);
+serv_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
+
+bind(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr));
+
+listen(sockfd,5);
+
+len=sizeof(client_addr);
+
+nwsockfd=accept(sockfd,(struct sockaddr *)&client_addr,&len);
+
+bzero(buffer,1024);
+strcpy(buffer,"ENTER CARD NO AND PIN");
+write(nwsockfd,buffer,strlen(buffer));
+
+bzero(buffer,1024);
+read(nwsockfd,buffer,1024);
+printf("\nCLIENT ---> %s",buffer);
+
+sscanf(buffer,"%d %d",&ccn,&cpin);
+
+if(cn==ccn && pin==cpin)
+{
+bzero(buffer,1024);
+sprintf(buffer,"WELCOME ENTER AMOUNT TO WITHDRAW: ",name);
+write(nwsockfd,buffer,strlen(buffer));
+
+bzero(buffer,1024);
+read(nwsockfd,buffer,1024);
+printf("\nCLIENT ---> %s",buffer);
+sscanf(buffer,"%d",&amt);
+
+if(bal>=amt)
+{
+int r=bal-amt;
+bzero(buffer,1024);
+sprintf(buffer,"WITHDRAW SUCCESSFUL, YOUR CURRENT BAL: %d",r);
+write(nwsockfd,buffer,strlen(buffer));
+}
+else
+{
+bzero(buffer,1024);
+sprintf(buffer,"WITHDRAW UNSUCCESSFUL,INSUFFICIENT BAL");
+write(nwsockfd,buffer,strlen(buffer));
+}
+}
+else
+{
+bzero(buffer,1024);
+sprintf(buffer,"INCORRECT DETAILS");
+write(nwsockfd,buffer,strlen(buffer));
+}
+
+close(sockfd);
+close(nwsockfd);
+}

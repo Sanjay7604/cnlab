@@ -1,0 +1,126 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+
+void main(int argc,char *argv[])
+{
+
+int sockfd,nwsockfd;
+struct sockaddr_in serv_addr,client_addr;
+socklen_t len;
+char buffer[1024];
+int port=8086;
+
+
+sockfd=socket(AF_INET,SOCK_STREAM,0);
+
+
+serv_addr.sin_family=AF_INET;
+serv_addr.sin_port=htons(port);
+serv_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
+
+bind(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr));
+
+listen(sockfd,5);
+
+len=sizeof(client_addr);
+nwsockfd=accept(sockfd,(struct sockaddr *)&client_addr,&len);
+
+char input[100],key[100],key1[100],temp[100],temp1[100],quot[100],rem[100];
+
+printf("\nEnter data : ");
+scanf("%s",input);
+printf("\nEnter key : ");
+scanf("%s",key);
+
+int keylen=strlen(key);
+int msglen=strlen(input);
+
+strcpy(key1,key);
+
+for(int i=0;i<keylen-1;i++)
+{
+input[msglen+i]='0';
+}
+
+
+for(int i=0;i<keylen;i++)
+{
+temp[i]=input[i];
+}
+for(int i=0;i<msglen;i++)
+{
+quot[i]=temp[0];
+if(quot[i]=='0')
+{
+for(int j=0;j<keylen;j++)
+{
+key[j]='0';
+}
+}
+else
+{
+for(int j=0;j<keylen;j++)
+{
+key[j]=key1[j];
+}
+}
+for(int j=keylen-1;j>0;j--)
+{
+if(temp[j]==key[j])
+{
+rem[j-1]='0';
+}
+else
+{
+rem[j-1]='1';
+}
+}
+
+rem[keylen-1]=input[i+keylen];
+strcpy(temp,rem);
+
+}
+
+
+strcpy(rem,temp);
+printf("\nQuotient is : ");
+for(int i=0;i<msglen;i++)
+{
+printf("%c",quot[i]);
+}
+printf("\nRemainder is : ");
+
+for(int i=0;i<keylen-1;i++)
+{
+printf("%c",rem[i]);
+}
+
+bzero(buffer,1024);
+int j=0;
+printf("\nFull data is : ");
+for(int i=0;i<msglen;i++)
+{
+printf("%c",input[i]);
+buffer[i]=input[i];
+j++;
+}
+for(int i=0;i<keylen-1;i++)
+{
+printf("%c",rem[i]);
+buffer[j]=rem[i];
+j++;
+}
+
+
+write(nwsockfd,buffer,sizeof(buffer));
+close(sockfd);
+close(nwsockfd);
+}
